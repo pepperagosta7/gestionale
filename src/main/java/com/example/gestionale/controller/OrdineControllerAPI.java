@@ -1,6 +1,7 @@
 package com.example.gestionale.controller;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.web.bind.annotation.*;
@@ -40,7 +41,7 @@ public class OrdineControllerAPI {
     }
 
     @GetMapping("/{id}")
-    public Ordine getOrdineById(@PathVariable Long id) {
+    public Optional<Ordine> getOrdineById(@PathVariable Long id) {
         return ordineServiceBase.getOne(id);
     }
 
@@ -51,7 +52,7 @@ public class OrdineControllerAPI {
     }
 
     @PutMapping("/{id}/stato")
-    public Ordine updateStatoOrdine(@PathVariable Long id, @Valid @RequestBody StatoOrdine stato) {
+    public Optional<Ordine> updateStatoOrdine(@PathVariable Long id, @Valid @RequestBody StatoOrdine stato) {
         return ordineServiceBase.updateStatoOrdine(id, stato);
     }
 

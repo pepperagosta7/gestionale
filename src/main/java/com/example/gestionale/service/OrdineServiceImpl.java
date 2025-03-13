@@ -2,6 +2,7 @@ package com.example.gestionale.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -10,9 +11,11 @@ import com.example.gestionale.model.Ordine;
 import com.example.gestionale.model.StatoOrdine;
 import com.example.gestionale.repository.OrdineRepository;
 
+import jakarta.transaction.Transactional;
+
 @Service
 @Qualifier("ordineServiceBase")
-public class OrdineServiceImpl {
+public class OrdineServiceImpl implements OrdineService {
     
     private final OrdineRepository ordineRepository;
     private final PrezzoStrategy prezzoStrategy;
@@ -26,9 +29,10 @@ public class OrdineServiceImpl {
         return ordineRepository.findAll();
     }
 
-    public Ordine getOne(Long id) {
-        return ordineRepository.findById(id).orElse(null);
-    }
+  public Optional<Ordine> getOne(Long id) {
+    return ordineRepository.findById(id);
+}
+
 
     public Ordine addOrdine(Ordine ordine) {
         BigDecimal importoCalcolato = prezzoStrategy.calcolaPrezzo(ordine.getImporto());
@@ -36,13 +40,15 @@ public class OrdineServiceImpl {
         return ordineRepository.save(ordine);
     }
 
-    public Ordine updateStatoOrdine(Long id, StatoOrdine stato) {
-        Ordine ordine = ordineRepository.findById(id).orElse(null);
-        if (ordine != null) {
-            ordine.setStato(stato);
-            return ordineRepository.save(ordine);
+    @Transactional
+    public Optional<Ordine> updateStatoOrdine(Long id, StatoOrdine newStatus) {
+        Optional<Ordine> ordineOptional = ordineRepository.findById(id);
+        if (ordineOptional.isPresent()) {
+            Ordine ordine = ordineOptional.get();
+            ordine.setStato(newStatus);
+            return Optional.of(ordineRepository.save(ordine));
         }
-        return null;
+        return Optional.empty();
     }
 
     public void delete(Long id) {
