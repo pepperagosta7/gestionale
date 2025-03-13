@@ -1,11 +1,207 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Gestione Ordini</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .badge-in-elaborazione { background-color: #ffc107; color: #212529; }
+        .badge-spedito { background-color: #0dcaf0; }
+        .badge-consegnato { background-color: #198754; }
+    </style>
 </head>
 <body>
+    <div class="container mt-5">
+        <header class="mb-4">
+            <div class="row">
+                <div class="col">
+                    <h1>Gestione Ordini</h1>
+                </div>
+                <div class="col-auto">
+                    <a th:href="@{/clienti}" class="btn btn-primary">Gestione Clienti</a>
+                </div>
+            </div>
+        </header>
+        
+        <!-- Filtro Stato -->
+        <div class="card mb-4">
+            <div class="card-header bg-info text-white">
+                <h5 class="mb-0">Filtra per Stato</h5>
+            </div>
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <a th:href="@{/ordini}" class="btn" 
+                       th:classappend="${statoSelezionato == null} ? 'btn-primary' : 'btn-outline-primary'">
+                        Tutti
+                    </a>
+                    <a th:each="stato : ${stati}" 
+                       th:href="@{/ordini(stato=${stato})}" 
+                       class="btn" 
+                       th:classappend="${stato == statoSelezionato} ? 'btn-primary' : 'btn-outline-primary'"
+                       th:text="${stato}">
+                        Stato
+                    </a>
+                </div>
+                
+                <!-- Se è stato selezionato un cliente specifico, mostra un badge -->
+                <div th:if="${clienteSelezionato}" class="mt-3">
+                    <span class="badge bg-secondary">
+                        Cliente: <span th:text="${clienteSelezionato.nome}"></span>
+                        <a th:href="@{/ordini}" class="text-white ms-2">
+                            <i class="bi bi-x-circle"></i>
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Nuovo Ordine -->
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Nuovo Ordine</h5>
+            </div>
+            <div class="card-body">
+                <form th:action="@{/ordini}" th:object="${nuovoOrdine}" method="post">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="cliente" class="form-label">Cliente*</label>
+                            <select class="form-select" id="cliente" th:field="*{cliente}" required>
+                                <option value="">Seleziona cliente</option>
+                                <option th:each="cliente : ${clienti}" 
+                                        th:value="${cliente.id}" 
+                                        th:text="${cliente.nome + ' (' + cliente.email + ')'}">
+                                    Cliente (email)
+                                </option>
+                            </select>
+                            <div class="text-danger" th:if="${#fields.hasErrors('cliente')}" th:errors="*{cliente}"></div>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="importo" class="form-label">Importo (€)*</label>
+                            <div class="input-group">
+                                <input type="number" step="0.01" min="0.01" class="form-control" id="importo" th:field="*{importo}" required>
+                                <span class="input-group-text">€</span>
+                            </div>
+                            <div class="text-danger" th:if="${#fields.hasErrors('importo')}" th:errors="*{importo}"></div>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success">
+                        <i class="bi bi-plus-circle"></i> Crea Ordine
+                    </button>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Tabella Ordini -->
+        <div class="card">
+            <div class="card-header bg-secondary text-white">
+                <div class="row align-items-center">
+                    <div class="col">
+                        <h5 class="mb-0">Lista Ordini</h5>
+                    </div>
+                    <div class="col-auto">
+                        <span class="badge bg-light text-dark" th:text="${#lists.size(ordini)} + ' ordini'">0 ordini</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${#lists.isEmpty(ordini)}" class="p-4 text-center text-muted">
+                    Nessun ordine trovato con i criteri di ricerca attuali.
+                </div>
+                <table th:if="${not #lists.isEmpty(ordini)}" class="table table-striped table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Cliente</th>
+                            <th>Data</th>
+                            <th>Importo</th>
+                            <th>Stato</th>
+                            <th class="text-end">Azioni</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="ordine : ${ordini}">
+                            <td th:text="${ordine.id}">1</td>
+                            <td>
+                                <a th:href="@{/ordini(clienteId=${ordine.cliente.id})}" class="text-decoration-none">
+                                    <span th:text="${ordine.cliente.nome}">Nome Cliente</span>
+                                </a>
+                            </td>
+                            <td th:text="${#temporals.format(ordine.dataOrdine, 'dd/MM/yyyy')}">01/01/2023</td>
+                            <td>
+                                <span th:text="${#numbers.formatDecimal(ordine.importo, 1, 2)} + ' €'">100.00 €</span>
+                            </td>
+                            <td>
+                                <span th:class="${'badge badge-' + #strings.toLowerCase(ordine.stato)}" th:text="${ordine.stato}">
+                                    STATO
+                                </span>
+                            </td>
+                            <td class="text-end">
+                                <!-- Dropdown per cambiare stato -->
+                                <div class="dropdown d-inline-block">
+                                    <button class="btn btn-sm btn-outline-secondary dropdown-toggle" type="button" 
+                                            data-bs-toggle="dropdown" aria-expanded="false">
+                                        Cambia stato
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li th:each="statoOpt : ${stati}">
+                                            <form th:if="${statoOpt != ordine.stato}" 
+                                                  th:action="@{/ordini/{id}/stato(id=${ordine.id})}" method="post" class="dropdown-item">
+                                                <input type="hidden" name="stato" th:value="${statoOpt}">
+                                                <button type="submit" class="btn btn-link p-0 text-decoration-none">
+                                                    <span th:class="${'badge me-2 badge-' + #strings.toLowerCase(statoOpt)}" th:text="${statoOpt}"></span>
+                                                    Segna come <span th:text="${#strings.toLowerCase(statoOpt)}"></span>
+                                                </button>
+                                            </form>
+                                            <span th:if="${statoOpt == ordine.stato}" class="dropdown-item disabled">
+                                                <span th:class="${'badge me-2 badge-' + #strings.toLowerCase(statoOpt)}" th:text="${statoOpt}"></span>
+                                                Stato attuale
+                                            </span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <!-- Pulsante elimina -->
+                                <button type="button" class="btn btn-sm btn-danger ms-1" 
+                                        data-bs-toggle="modal" 
+                                        th:data-bs-target="'#deleteOrdineModal' + ${ordine.id}">
+                                    Elimina
+                                </button>
+                                
+                                <!-- Modal di conferma eliminazione ordine -->
+                                <div class="modal fade" th:id="'deleteOrdineModal' + ${ordine.id}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header bg-danger text-white">
+                                                <h5 class="modal-title">Conferma eliminazione</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Sei sicuro di voler eliminare l'ordine #<span th:text="${ordine.id}"></span>?</p>
+                                                <p>
+                                                    <strong>Cliente:</strong> <span th:text="${ordine.cliente.nome}"></span><br>
+                                                    <strong>Data:</strong> <span th:text="${#temporals.format(ordine.dataOrdine, 'dd/MM/yyyy')}"></span><br>
+                                                    <strong>Importo:</strong> <span th:text="${#numbers.formatDecimal(ordine.importo, 1, 2)} + ' €'"></span>
+                                                </p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annulla</button>
+                                                <form th:action="@{/ordini/elimina/{id}(id=${ordine.id})}" method="post">
+                                                    <button type="submit" class="btn btn-danger">Conferma Eliminazione</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
     
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
