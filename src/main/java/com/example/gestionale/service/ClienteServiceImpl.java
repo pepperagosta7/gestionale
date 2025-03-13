@@ -1,6 +1,7 @@
 package com.example.gestionale.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
@@ -23,21 +24,26 @@ public class ClienteServiceImpl implements ClienteService {
         return clienteRepository.findAll();
     }
 
-    public Cliente findById(Long id) {
-        return clienteRepository.findById(id).orElse(null);
+    public Optional<Cliente> findById(Long id) {
+        return clienteRepository.findById(id);
     }
 
     public Cliente addCliente(Cliente cliente) {
         return clienteRepository.save(cliente);
     }
 
-    public Cliente updateCliente(Cliente cliente) {
-        if (clienteRepository.existsById(cliente.getId())) {
-            return clienteRepository.save(cliente);
-        } else {
-            throw new IllegalArgumentException("Cliente not found with id: " + cliente.getId());
+    public Optional<Cliente> updateCliente(Long id, Cliente clienteUp) {
+        Optional<Cliente> existingCliente = clienteRepository.findById(id);
+        if (existingCliente.isPresent()) {
+            Cliente cliente = existingCliente.get();
+            cliente.setNome(clienteUp.getNome());
+            cliente.setEmail(clienteUp.getEmail());
+            cliente.setTelefono(clienteUp.getTelefono());
+            return Optional.of(clienteRepository.save(cliente));
         }
+        return Optional.empty();
     }
+
 
     public void deleteCliente(Long id) {
         if (ordineRepository.countByClienteId(id) == 0) {
@@ -46,4 +52,5 @@ public class ClienteServiceImpl implements ClienteService {
             throw new IllegalArgumentException("Cliente with id: " + id + " has existing orders and cannot be deleted.");
         }
     }
+
 }

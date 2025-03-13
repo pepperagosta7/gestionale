@@ -2,6 +2,7 @@ package com.example.gestionale.controller;
 
 import java.util.List;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import com.example.gestionale.model.Cliente;
@@ -15,6 +16,7 @@ public class ClienteControllerAPI {
 
     private final ClienteService clienteService;
 
+    @Autowired
     public ClienteControllerAPI(ClienteService clienteService) {
         this.clienteService = clienteService;
     }
@@ -26,7 +28,7 @@ public class ClienteControllerAPI {
 
     @GetMapping("/{id}")
     public Cliente getClienteById(@PathVariable Long id) {
-        return clienteService.findById(id);
+        return clienteService.findById(id).orElse(null);
     }
 
     @PostMapping
@@ -36,8 +38,7 @@ public class ClienteControllerAPI {
 
     @PutMapping("/{id}")
     public Cliente updateCliente(@PathVariable Long id, @Valid @RequestBody Cliente cliente) {
-        cliente.setId(id);
-        return clienteService.updateCliente(cliente);
+        return clienteService.updateCliente(id, cliente).orElse(null);
     }
 
     @DeleteMapping("/{id}")
