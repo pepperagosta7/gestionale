@@ -35,6 +35,7 @@ L'applicazione segue un'architettura multi-livello che separa chiaramente le res
 **Funzionalità**: Classe principale che avvia l'applicazione Spring Boot.
 
 **Implementazione**:
+
 ```java
 @SpringBootApplication
 public class GestionaleApplication {
@@ -53,6 +54,7 @@ public class GestionaleApplication {
 **Funzionalità**: Interfaccia per l'accesso ai dati degli ordini nel database.
 
 **Implementazione**:
+
 ```java
 public interface OrdineRepository extends JpaRepository<Ordine, Long> {
     int countByClienteId(Long clienteid);
@@ -76,6 +78,7 @@ public interface OrdineRepository extends JpaRepository<Ordine, Long> {
 **Funzionalità**: Implementa la logica di business per la gestione dei clienti.
 
 **Implementazione**:
+
 ```java
 @Service
 public class ClienteServiceImpl implements ClienteService {
@@ -100,6 +103,7 @@ public class ClienteServiceImpl implements ClienteService {
 **Funzionalità**: Implementa la logica di business per la gestione degli ordini.
 
 **Implementazione**:
+
 ```java
 @Service
 @Qualifier("ordineServiceBase")
@@ -119,7 +123,8 @@ public class OrdineServiceImpl implements OrdineService {
 }
 ```
 
-**Utilizzo**: 
+**Utilizzo**:
+
 - Implementa l'interfaccia OrdineService
 - Utilizza una strategia di prezzo per calcolare l'importo degli ordini
 - Viene qualificato come "ordineServiceBase" per permettere implementazioni alternative
@@ -131,6 +136,7 @@ public class OrdineServiceImpl implements OrdineService {
 **Funzionalità**: Espone endpoint REST per la gestione dei clienti.
 
 **Implementazione**:
+
 ```java
 @RestController
 @RequestMapping("/api/clienti")
@@ -155,6 +161,7 @@ public class ClienteControllerAPI {
 **Funzionalità**: Espone endpoint REST per la gestione degli ordini.
 
 **Implementazione**:
+
 ```java
 @RestController
 @RequestMapping("/api/ordini")
@@ -180,7 +187,8 @@ public class OrdineControllerAPI {
 }
 ```
 
-**Utilizzo**: 
+**Utilizzo**:
+
 - Fornisce un'API RESTful per la gestione degli ordini
 - Seleziona automaticamente la strategia di prezzo appropriata (base o scontata) in base al numero di ordini del cliente
 
@@ -191,6 +199,7 @@ public class OrdineControllerAPI {
 **Funzionalità**: Controller per la UI web Thymeleaf per la gestione dei clienti.
 
 **Implementazione**:
+
 ```java
 @Controller
 @RequestMapping("/clienti")
@@ -215,6 +224,7 @@ public class ClienteControllerThymeLeaf {
 **Funzionalità**: Controller per la UI web Thymeleaf per la gestione degli ordini.
 
 **Implementazione**:
+
 ```java
 @Controller
 @RequestMapping("/ordini")
@@ -239,7 +249,8 @@ public class OrdineControllerThymeLeaf {
 }
 ```
 
-**Utilizzo**: 
+**Utilizzo**:
+
 - Gestisce le richieste web per la UI degli ordini
 - Seleziona il servizio appropriato in base al numero di ordini del cliente
 
@@ -250,6 +261,7 @@ public class OrdineControllerThymeLeaf {
 **Funzionalità**: Interfaccia per strategie di calcolo del prezzo.
 
 **Implementazione**:
+
 ```java
 public interface PrezzoStrategy {
     BigDecimal calcolaPrezzo(Ordine ordine);
@@ -281,6 +293,7 @@ public interface PrezzoStrategy {
 **Funzionalità**: Rappresenta l'entità cliente nel sistema.
 
 **Implementazione**:
+
 ```java
 @Entity
 public class Cliente {
@@ -311,6 +324,7 @@ public class Cliente {
 **Funzionalità**: Rappresenta l'entità ordine nel sistema.
 
 **Implementazione**:
+
 ```java
 @Entity
 public class Ordine {
@@ -340,6 +354,7 @@ public class Ordine {
 **Funzionalità**: Enum che rappresenta lo stato di un ordine.
 
 **Implementazione**:
+
 ```java
 public enum StatoOrdine {
     IN_ELABORAZIONE, SPEDITO, CONSEGNATO
@@ -355,6 +370,7 @@ public enum StatoOrdine {
 **Funzionalità**: Configura la connessione al database e le proprietà di Hibernate.
 
 **Implementazione**:
+
 ```properties
 spring.application.name=gestionale
 
@@ -378,6 +394,7 @@ spring.jpa.show-sql=true
 **Funzionalità**: Template Thymeleaf per la visualizzazione e gestione dei clienti.
 
 **Implementazione**:
+
 - Visualizza la lista dei clienti in tabella
 - Fornisce pulsanti per modifica ed eliminazione
 - Include un form per l'aggiunta di nuovi clienti
@@ -389,6 +406,7 @@ spring.jpa.show-sql=true
 **Funzionalità**: Template Thymeleaf per la visualizzazione e gestione degli ordini.
 
 **Implementazione**:
+
 - Visualizza la lista degli ordini in tabella
 - Usa colori diversi per i vari stati dell'ordine
 - Permette di modificare lo stato dell'ordine
